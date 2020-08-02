@@ -5,9 +5,9 @@
 #include <iostream>
 
 #include "test_functions.h"
-#include "tictacAI.h"
-#include "board/board.h"
-#include "board/gameBoard.h"
+#include "../tictacAI.h"
+#include "../board/board.h"
+#include "../board/gameBoard.h"
 
 void testWinValidation() {
     board row_b;

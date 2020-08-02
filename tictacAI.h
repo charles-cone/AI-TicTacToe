@@ -30,18 +30,18 @@ private:
     class move_node {
     public:
         move_node();
-        explicit move_node(const board& g_state);
+        explicit move_node(board *g_state);
         ~move_node();
 
-        int getXWinCount() { return possible_x_wins; }
-        int getOWinCount() { return possible_o_wins; }
+        int getXWinCount() { return _possible_x_wins; }
+        int getOWinCount() { return _possible_o_wins; }
         int countSubNodes();
 
+        float getXWinRatio() { return _ratio; }
+        float getOWinRatio() { return 1 / _ratio; }
 
         void setWinCounts(int x_wins, int o_wins);
         void setBranch(int i, move_node* branch);
-
-        board* getBoard() { return &cur_state; }
 
         bool isWinningPlay();
         boardSpot getWinningMark() { return _winning_mark; }
@@ -50,19 +50,19 @@ private:
 
 
     private:
-        static int recCountNodes(move_node* node);
+        static int rec_count_nodes(move_node* node);
 
         boardSpot _winning_mark;
 
-        int possible_x_wins;
-        int possible_o_wins;
+        int _possible_x_wins;
+        int _possible_o_wins;
 
-        board cur_state;
+        float _ratio;
 
         move_node* _counter_moves[BOARD_SIZE];
     };
 
-    int rec_create_tree(move_node *c_node, bool is_x_turn);
+    int rec_create_tree(move_node *c_node, bool is_x_turn, board *c_board);
     int rec_count_nodes_at_level(int level, move_node* node);
 
     bool _is_generated;

@@ -146,3 +146,10 @@ bool board::canPlay() {
     return !(_open_spots == 0 || checkWin());
 }
 
+void board::erasePlay(int i) {
+    if(_g_board[i/BOARD_SIDE_LENGTH][i%BOARD_SIDE_LENGTH] != EMPTY) {
+        _g_board[i/BOARD_SIDE_LENGTH][i%BOARD_SIDE_LENGTH] = EMPTY;
+        _open_spots--;
+    }
+}
+

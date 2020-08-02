@@ -20,6 +20,8 @@ public:
     board();
     ~board();
 
+    void erasePlay(int i);
+
     bool setPlace(int i, boardSpot mark);
     bool setPlace(int r, int c, boardSpot mark);
     bool canPlay();

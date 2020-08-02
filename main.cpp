@@ -1,9 +1,4 @@
-#include <iostream>
-
-#include "board/board.h"
-#include "tictacAI.h"
-#include "test_functions.h"
-
+#include "tests/test_functions.h"
 
 int main() {
     // testTreeBuild();
@@ -13,4 +8,3 @@ int main() {
     testObjects();
     return 0;
 }
-

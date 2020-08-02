@@ -25,20 +25,15 @@ tictacAI::~tictacAI() {
 
 void tictacAI::generateTree() {
     if(!_is_generated) {
-        board blank_board;
+        auto* blank_board = new board();
         _tree_start = new move_node(blank_board);
 
-        int open_spots[BOARD_SIZE];
-        for(int i = 0; i < BOARD_SIZE; ++i) {
-            open_spots[i] = i;
-        }
-
-        rec_create_tree(_tree_start, true);
+        rec_create_tree(_tree_start, true, blank_board);
         _is_generated = true;
     }
 }
 
-int tictacAI::rec_create_tree(move_node *c_node, bool is_x_turn) {
+int tictacAI::rec_create_tree(move_node *c_node, bool is_x_turn, board *c_board) {
     // check if its a winning move;
     if( c_node->isWinningPlay() ) {
         boardSpot mark = c_node->getWinningMark();
@@ -49,21 +44,23 @@ int tictacAI::rec_create_tree(move_node *c_node, bool is_x_turn) {
         return 0;
     }
 
-    else if ( c_node->getBoard()->getOpenSpots() == 0) return 0;
+    else if ( c_board->getOpenSpots() == 0) return 0;
 
     boardSpot move_mark = (is_x_turn ? X_MARK : O_MARK);
     int branched_x_wins = 0;
     int branched_o_wins = 0;
 
     for( int i = 0; i < BOARD_SIZE; i++ ) {
-        if(c_node->getBoard()->checkPlace(i) == EMPTY) {
-            board n_board = *c_node->getBoard();
-            n_board.setPlace(i, move_mark);
+        if(c_board->checkPlace(i) == EMPTY) {
 
-            auto* n_node = new move_node(n_board);
+            c_board->setPlace(i, move_mark);
+
+            auto* n_node = new move_node(c_board);
             c_node->setBranch(i, n_node);
 
-            rec_create_tree(n_node, !is_x_turn);
+            rec_create_tree(n_node, !is_x_turn, c_board);
+
+            c_board->erasePlay(i);
 
             branched_x_wins += n_node->getXWinCount();
             branched_o_wins += n_node->getOWinCount();
@@ -126,11 +123,10 @@ int tictacAI::AIGetNextMove() {
 
     int best_move_index = 0;
     float best_ratio = 0.0;
-    bool can_win = false;
 
     for (int i = 0; i < BOARD_SIZE; ++i) {
         move_node* cur_option = _ai_current_board_state->getBranch(i);
-        float ratio = 0.0;
+        float ratio;
         if(cur_option != nullptr) {
             // if the game can be won, win it
             if(cur_option->getWinningMark() == _ai_mark) {
@@ -138,17 +134,10 @@ int tictacAI::AIGetNextMove() {
 
             } else {
                 // check the win / loss ratio
-                // TODO move into be part of the move node when adding pruning
-                switch(_ai_mark) {
-                    case X_MARK:
-                        ratio = (float)cur_option->getXWinCount() / (float)cur_option->getOWinCount();
-                        break;
-                    case O_MARK:
-                        ratio = (float)cur_option->getOWinCount() / (float)cur_option->getXWinCount();
-                        break;
-                    default:
-                        ratio = 0;
-                        break;
+                if(_ai_mark == X_MARK) {
+                    ratio = cur_option->getXWinRatio();
+                } else {
+                    ratio = cur_option->getOWinRatio();
                 }
 
                 if(ratio > best_ratio) {
@@ -172,8 +161,9 @@ void tictacAI::AISetPrevMove() {
 
 tictacAI::move_node::move_node() {
     _winning_mark = EMPTY;
-    possible_x_wins = 0;
-    possible_o_wins = 0;
+    _possible_x_wins = 0;
+    _possible_o_wins = 0;
+    _ratio = 0.0;
 
     for (auto &i : _counter_moves) {
         i = nullptr;
@@ -186,19 +176,18 @@ tictacAI::move_node::~move_node() {
     }
 }
 
-tictacAI::move_node::move_node(const board& g_state) {
-    cur_state = g_state;
+tictacAI::move_node::move_node(board *g_state) {
     _winning_mark = EMPTY;
-    possible_x_wins = 0;
-    possible_o_wins = 0;
+    _possible_x_wins = 0;
+    _possible_o_wins = 0;
+    _ratio = 0.0;
 
     for (auto &i : _counter_moves) {
         i = nullptr;
     }
 
-    // TODO make this a part of the board class
-    if(cur_state.getOpenSpots() < MIN_TURNS_TO_WIN) {
-        _winning_mark = cur_state.checkWin();
+    if(g_state->getOpenSpots() < MIN_TURNS_TO_WIN) {
+        _winning_mark = g_state->checkWin();
     }
 }
 
@@ -211,19 +200,19 @@ bool tictacAI::move_node::isWinningPlay() {
 }
 
 int tictacAI::move_node::countSubNodes() {
-    return recCountNodes(this);
+    return rec_count_nodes(this);
 }
 
-int tictacAI::move_node::recCountNodes(tictacAI::move_node *node) {
+int tictacAI::move_node::rec_count_nodes(tictacAI::move_node *node) {
     int sub_node_count = 0;
     for (int i = 0; i < BOARD_SIZE*(node != nullptr); ++i) {
-        sub_node_count += recCountNodes(node->getBranch(i));
+        sub_node_count += rec_count_nodes(node->getBranch(i));
     }
     return sub_node_count + (node != nullptr);
 }
 
 void tictacAI::move_node::setWinCounts(int x_wins, int o_wins) {
-    possible_o_wins = o_wins;
-    possible_x_wins = x_wins;
+    _possible_o_wins = o_wins;
+    _possible_x_wins = x_wins;
+    _ratio = _ratio = (float)_possible_x_wins / (float)_possible_o_wins;
 }
-
