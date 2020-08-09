@@ -8,7 +8,8 @@ void gameBoard::promptUserInput(boardSpot mark) {
     bool invalid_input = true;
     std::cout << "- Enter your move -" << std::endl;
     while(invalid_input) {
-        int r, c;
+        int r = 0;
+        int c = 0;
         std::cout << "Row: ";
         std::cin >> r;
         std::cout << "Column: ";
@@ -49,4 +50,13 @@ void gameBoard::printBoard() {
 
 int gameBoard::getIndexOfLastPlay() {
     return _last_play_index;
+}
+
+void gameBoard::playAtOpenIndex(int o_i, boardSpot mark) {
+    for(int i = 0; i < BOARD_SIZE; i++) {
+        o_i -= (checkPlace(i) == EMPTY);
+        if(o_i == 0) {
+            setPlace(i, mark);
+        }
+    }
 }

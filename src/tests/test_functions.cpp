@@ -64,12 +64,11 @@ void testTreeBuild() {
 
 void testGameBoard() {
     gameBoard game_board;
-    boardSpot winType;
 
     int i = 0;
     while (i < 5) {
-        int row_choice;
-        int col_choice;
+        int row_choice = 0;
+        int col_choice = 0;
 
         std::cout << "row:";
         std::cin >> row_choice;

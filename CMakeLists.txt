@@ -3,4 +3,4 @@ project(tictactoes)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(tictactoes main.cpp board/board.cpp board/board.h tictacAI.cpp tictacAI.h tests/test_functions.h tests/test_functions.cpp board/gameBoard.cpp board/gameBoard.h)
+add_executable(tictactoes src/main.cpp src/board/board.cpp src/board/board.h src/tictacAI.cpp src/tictacAI.h src/tests/test_functions.h src/tests/test_functions.cpp src/board/gameBoard.cpp src/board/gameBoard.h)

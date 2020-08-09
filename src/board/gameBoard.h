@@ -16,6 +16,7 @@ public:
 
     void printBoard();
     void promptUserInput(boardSpot mark);
+    void playAtOpenIndex(int o_i, boardSpot mark);
 
     int getIndexOfLastPlay();
 
