@@ -4,7 +4,9 @@ int main() {
     // testTreeBuild();
     // testGameBoard();
     // testWinValidation();
-    testAIMoves();
-    testObjects();
+    // testAIMoves();
+    // testObjects();
+    testTimerLibrary();
+
     return 0;
 }

@@ -1,0 +1,3 @@
+[submodule "lib/easy_timer"]
+	path = lib/easy_timer
+	url = https://github.com/charles-cone/easy_timer

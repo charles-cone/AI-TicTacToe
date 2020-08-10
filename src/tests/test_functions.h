@@ -10,5 +10,6 @@ void testWinValidation();
 void testTreeBuild();
 void testAIMoves();
 void testObjects();
+void testTimerLibrary();
 
 #endif //TICTACTOES_TEST_FUNCTIONS_H

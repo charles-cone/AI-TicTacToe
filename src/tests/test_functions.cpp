@@ -8,6 +8,7 @@
 #include "../tictacAI.h"
 #include "../board/board.h"
 #include "../board/gameBoard.h"
+#include "../../lib/easy_timer/easy_timer.h"
 
 void testWinValidation() {
     board row_b;
@@ -124,4 +125,15 @@ void testAIMoves() {
 void testObjects() {
     board game_board;
     game_board.setPlace(4, X_MARK);
+}
+
+void testTimerLibrary() {
+    int t_id = ez_t::timer::getInstance().createNewTimer();
+    for(int i = 0; i < 100000; i++) {
+        if( i % 4 == 0 ) {
+            std::cout << i << std::endl;
+        }
+    }
+
+   std::cout <<  ez_t::timer::getInstance().getMillisAndStopTimer(t_id) << std::endl;
 }
