@@ -129,7 +129,7 @@ void testObjects() {
 
 void testTimerLibrary() {
     int t_id = ez_t::timer::getInstance().createNewTimer();
-    for(int i = 0; i < 100000; i++) {
+    for(int i = 0; i < 1000; i++) {
         if( i % 4 == 0 ) {
             std::cout << i << std::endl;
         }
