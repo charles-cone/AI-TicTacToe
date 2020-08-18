@@ -122,14 +122,14 @@ int tictacAI::AIGetNextMove() {
     if(!_ai_turn) return 0;
 
     int best_move_index = 0;
-    float best_ratio = 0.0;
+    float best_ratio = 0;
 
     for (int i = 0; i < BOARD_SIZE; ++i) {
         move_node* cur_option = _ai_current_board_state->getBranch(i);
         float ratio;
         if(cur_option != nullptr) {
             // if the game can be won, win it
-            if(cur_option->getWinningMark() == _ai_mark) {
+            if(cur_option->getWinningMark() == _ai_mark || _cur_game->getOpenSpots() == 1) {
                 return i;
 
             } else {

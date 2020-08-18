@@ -11,5 +11,7 @@ void testTreeBuild();
 void testAIMoves();
 void testObjects();
 void testTimerLibrary();
+void testDebugger();
+void testFloats();
 
 #endif //TICTACTOES_TEST_FUNCTIONS_H

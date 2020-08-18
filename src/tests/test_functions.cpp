@@ -129,11 +129,35 @@ void testObjects() {
 
 void testTimerLibrary() {
     int t_id = ez_t::timer::getInstance().createNewTimer();
+
     for(int i = 0; i < 1000; i++) {
         if( i % 4 == 0 ) {
             std::cout << i << std::endl;
         }
     }
 
-   std::cout <<  ez_t::timer::getInstance().getMillisAndStopTimer(t_id) << std::endl;
+    ez_t::timer::getInstance().printTicsPerSecond();
+    std::cout << "took " << ez_t::timer::getInstance().getMillisAndStopTimer(t_id) << "ms." << std::endl;
+}
+
+void testDebugger() {
+    std::vector<int> v;
+    for (int i = 0; i < 5; ++i) {
+        v.push_back(i);
+    }
+
+}
+
+void testFloats() {
+    float zeroDivZero = 0 / 0.0;
+    std::cout << "The result of 0 / 0.0 is: " << zeroDivZero << std::endl;
+
+    bool lessThan = zeroDivZero < 0;
+    std::cout << "Zero div zero is less than zero:  " << lessThan << std::endl;
+
+    float clampTest = zeroDivZero * lessThan;
+    std::cout << "the result of the clamp is: " << clampTest << std::endl;
+
+    bool lessThanOther = zeroDivZero < 56;
+    //std::cout
 }
