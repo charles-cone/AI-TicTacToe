@@ -113,7 +113,7 @@ void testAIMoves() {
 
     while( game_board.canPlay() ) {
         int ai_move = game_tree.AIGetNextMove();
-        game_board.setPlace(ai_move, ai_mark);
+        game_board.playByOpenIndex(ai_move, ai_mark);
         game_board.printBoard();
         game_board.promptUserInput(player_mark);
         game_board.printBoard();
@@ -160,4 +160,13 @@ void testFloats() {
 
     bool lessThanOther = zeroDivZero < 56;
     //std::cout
+}
+
+void testDynamicArrays() {
+    int * arr;
+    arr = new int[78];
+    delete [] arr;
+
+    arr = new int[0];
+    delete [] arr;
 }

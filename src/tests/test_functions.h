@@ -13,5 +13,6 @@ void testObjects();
 void testTimerLibrary();
 void testDebugger();
 void testFloats();
+void testDynamicArrays();
 
 #endif //TICTACTOES_TEST_FUNCTIONS_H

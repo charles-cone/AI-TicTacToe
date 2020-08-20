@@ -9,5 +9,6 @@ int main() {
     // testTimerLibrary();
     // testDebugger();
     // testFloats();
+    // testDynamicArrays();
     return 0;
 }

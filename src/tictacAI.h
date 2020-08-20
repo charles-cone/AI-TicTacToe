@@ -59,7 +59,8 @@ private:
 
         float _ratio;
 
-        move_node* _counter_moves[BOARD_SIZE];
+        int _arr_size;
+        move_node **_counter_moves;
     };
 
     int rec_create_tree(move_node *c_node, bool is_x_turn, board *c_board);

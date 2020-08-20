@@ -38,7 +38,6 @@ boardSpot board::checkWin() {
 
         // check if there was a win
         if (vert_x_win || horiz_x_win) {
-            // std::cout << "single col X win" << std::endl;
             return X_MARK;
         }
         else if (vert_o_win || horiz_o_win) {
@@ -55,7 +54,6 @@ boardSpot board::checkWin() {
     }
 
     if (r_diag_x_win || l_diag_x_win) {
-        // std::cout << "Diagonal X win" << std::endl;
         return X_MARK;
     }
     else if (r_diag_o_win || l_diag_o_win) {
@@ -136,7 +134,7 @@ boardSpot board::checkPlace(int i) {
 bool board::setPlace(int i, boardSpot mark) {
     if(_g_board[i/BOARD_SIDE_LENGTH][i%BOARD_SIDE_LENGTH] == EMPTY) {
         _g_board[i/BOARD_SIDE_LENGTH][i%BOARD_SIDE_LENGTH] = mark;
-        --_open_spots;
+        _open_spots--;
         return true;
     }
     return false;
@@ -149,7 +147,7 @@ bool board::canPlay() {
 void board::erasePlay(int i) {
     if(_g_board[i/BOARD_SIDE_LENGTH][i%BOARD_SIDE_LENGTH] != EMPTY) {
         _g_board[i/BOARD_SIDE_LENGTH][i%BOARD_SIDE_LENGTH] = EMPTY;
-        _open_spots--;
+        _open_spots++;
     }
 }
 
