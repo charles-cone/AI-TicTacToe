@@ -4,9 +4,9 @@ int main() {
     // testTreeBuild();
     // testGameBoard();
     // testWinValidation();
-    testAIMoves();
+    // testAIMoves();
     // testObjects();
-    // testTimerLibrary();
+    testTimerLibrary();
     // testDebugger();
     // testFloats();
     // testDynamicArrays();

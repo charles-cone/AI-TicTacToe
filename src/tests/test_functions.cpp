@@ -128,16 +128,20 @@ void testObjects() {
 }
 
 void testTimerLibrary() {
-    int t_id = ez_t::timer::getInstance().createNewTimer();
+    ez_t::timer m(ez_t::interval::Millis);
+    ez_t::timer s(ez_t::interval::Seconds);
+    ez_t::timer mi(ez_t::interval::Minutes);
 
-    for(int i = 0; i < 1000; i++) {
+    for(int i = 0; i < 100000; i++) {
         if( i % 4 == 0 ) {
             std::cout << i << std::endl;
         }
     }
 
-    ez_t::timer::getInstance().printTicsPerSecond();
-    std::cout << "took " << ez_t::timer::getInstance().getMillisAndStopTimer(t_id) << "ms." << std::endl;
+    std::cout << "Took " << m.getTime() << " Millis ";
+    std::cout << s.getTime() << " Seconds ";
+    std::cout << mi.getTime() << " Minutes " << std::endl;
+
 }
 
 void testDebugger() {
@@ -170,3 +174,5 @@ void testDynamicArrays() {
     arr = new int[0];
     delete [] arr;
 }
+
+
