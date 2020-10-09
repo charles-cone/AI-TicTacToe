@@ -3,9 +3,9 @@
 //
 
 #include <iostream>
-#include "tictacAI.h"
+#include "dynamicCounterAI.h"
 
-tictacAI::tictacAI() {
+dynamicCounterAI::dynamicCounterAI() {
     _is_generated = false;
 
     _tree_start = nullptr;
@@ -16,15 +16,16 @@ tictacAI::tictacAI() {
     _ai_mark = EMPTY;
 }
 
-tictacAI::~tictacAI() {
+dynamicCounterAI::~dynamicCounterAI() {
     if(_is_generated) {
         delete _tree_start;
     }
     _tree_start = nullptr;
 }
 
-void tictacAI::generateTree() {
+void dynamicCounterAI::generateTree(boardSpot ai) {
     if(!_is_generated) {
+        _ai_mark = ai;
         auto* blank_board = new board();
         _tree_start = new move_node(blank_board);
 
@@ -33,7 +34,7 @@ void tictacAI::generateTree() {
     }
 }
 
-int tictacAI::rec_create_tree(move_node *c_node, bool is_x_turn, board *c_board) {
+int dynamicCounterAI::rec_create_tree(move_node *c_node, bool is_x_turn, board *c_board) {
     // check if its a winning move;
     if( c_node->isWinningPlay() ) {
         boardSpot mark = c_node->getWinningMark();
@@ -73,23 +74,23 @@ int tictacAI::rec_create_tree(move_node *c_node, bool is_x_turn, board *c_board)
     return 0;
 }
 
-int tictacAI::getXCount() {
+int dynamicCounterAI::getXCount() {
     return _tree_start->getXWinCount();
 }
 
-int tictacAI::getOCount() {
+int dynamicCounterAI::getOCount() {
     return _tree_start->getOWinCount();
 }
 
-int tictacAI::countNodes() {
+int dynamicCounterAI::countChildren() {
     return _tree_start->countSubNodes();
 }
 
-int tictacAI::countNodesAtLevel(int level) {
+int dynamicCounterAI::countNodesAtLevel(int level) {
     return rec_count_nodes_at_level(--level, _tree_start);
 }
 
-int tictacAI::rec_count_nodes_at_level(int level, tictacAI::move_node *node) {
+int dynamicCounterAI::rec_count_nodes_at_level(int level, dynamicCounterAI::move_node *node) {
     if(node == nullptr) {
         return 0;
     }
@@ -107,8 +108,7 @@ int tictacAI::rec_count_nodes_at_level(int level, tictacAI::move_node *node) {
     }
 }
 
-void tictacAI::startGame(boardSpot mark, gameBoard *game) {
-    _ai_mark = mark;
+void dynamicCounterAI::startGame( gameBoard *game ) {
     _cur_game = game;
 
     if(_ai_mark == X_MARK) {
@@ -120,7 +120,7 @@ void tictacAI::startGame(boardSpot mark, gameBoard *game) {
     }
 }
 
-int tictacAI::AIGetNextMove() {
+int dynamicCounterAI::ai_get_next_move() {
     if(!_ai_turn) return 0;
 
     int best_move_index = 0;
@@ -130,6 +130,7 @@ int tictacAI::AIGetNextMove() {
         move_node* cur_option = _ai_current_board_state->getBranch(i);
         float ratio;
         if(cur_option != nullptr) {
+            cur_option->inspect();
             // if the game can be won, win it
             if(cur_option->getWinningMark() == _ai_mark || _cur_game->getOpenSpots() == 1) {
                 return i;
@@ -155,7 +156,7 @@ int tictacAI::AIGetNextMove() {
     return best_move_index;
 }
 
-void tictacAI::AISetPrevMove() {
+void dynamicCounterAI::ai_set_prev_move() {
     if(_ai_turn) return;
     // convert the board space to an index that can be used in the counter array
     int last_play_open_index = 0;
@@ -167,7 +168,32 @@ void tictacAI::AISetPrevMove() {
     _ai_turn = true;
 }
 
-tictacAI::move_node::move_node() {
+long int dynamicCounterAI::getTreeSize() {
+    return 0;
+}
+
+void dynamicCounterAI::aiTakeNextTurn() {
+    ai_set_prev_move();
+    _cur_game->playByOpenIndex(ai_get_next_move(), _ai_mark);
+}
+
+void dynamicCounterAI::printWinGrid() {
+    for (int i = 0; i < 3; ++i) {
+        int row = i*3;
+        std::cout << _tree_start->getBranch(row)->getXWinCount() << "|"
+                  << _tree_start->getBranch(row+1)->getXWinCount() << "|"
+                  << _tree_start->getBranch(row+2)->getXWinCount() << std::endl;
+
+        std::cout << _tree_start->getBranch(row)->getOWinCount() << "|"
+                  << _tree_start->getBranch(row+1)->getOWinCount() << "|"
+                  << _tree_start->getBranch(row+2)->getOWinCount() << std::endl;
+
+        std::cout << std::endl;
+    }
+    std::cout << "totals X:" << _tree_start->getXWinCount() << " O:" << _tree_start->getOWinCount() << std::endl;
+}
+
+dynamicCounterAI::move_node::move_node() {
     _winning_mark = EMPTY;
     _possible_x_wins = 0;
     _possible_o_wins = 0;
@@ -179,7 +205,7 @@ tictacAI::move_node::move_node() {
     }
 }
 
-tictacAI::move_node::move_node(board *g_state) {
+dynamicCounterAI::move_node::move_node(board *g_state) {
     _winning_mark = EMPTY;
     _possible_x_wins = 0;
     _possible_o_wins = 0;
@@ -197,26 +223,26 @@ tictacAI::move_node::move_node(board *g_state) {
     }
 }
 
-tictacAI::move_node::~move_node() {
+dynamicCounterAI::move_node::~move_node() {
     for (int i = 0; i < _arr_size; i++) {
         delete _counter_moves[i];
     }
     delete [] _counter_moves;
 }
 
-void tictacAI::move_node::setBranch(int i, tictacAI::move_node *branch) {
+void dynamicCounterAI::move_node::setBranch(int i, dynamicCounterAI::move_node *branch) {
     _counter_moves[i] = branch;
 }
 
-bool tictacAI::move_node::isWinningPlay() {
+bool dynamicCounterAI::move_node::isWinningPlay() {
     return _winning_mark != EMPTY;
 }
 
-int tictacAI::move_node::countSubNodes() {
+int dynamicCounterAI::move_node::countSubNodes() {
     return rec_count_nodes(this);
 }
 
-int tictacAI::move_node::rec_count_nodes(tictacAI::move_node *node) {
+int dynamicCounterAI::move_node::rec_count_nodes(dynamicCounterAI::move_node *node) {
     int sub_node_count = 0;
     for (int i = 0; i < BOARD_SIZE*(node != nullptr); ++i) {
         sub_node_count += rec_count_nodes(node->getBranch(i));
@@ -224,8 +250,17 @@ int tictacAI::move_node::rec_count_nodes(tictacAI::move_node *node) {
     return sub_node_count + (node != nullptr);
 }
 
-void tictacAI::move_node::setWinCounts(int x_wins, int o_wins) {
+void dynamicCounterAI::move_node::setWinCounts(int x_wins, int o_wins) {
     _possible_o_wins = o_wins;
     _possible_x_wins = x_wins;
     _ratio = _ratio = (float)_possible_x_wins / (float)_possible_o_wins;
+}
+
+void dynamicCounterAI::move_node::inspect() {
+    move_node* arr[9];
+    for(int i = 0; i < 9; i++){
+        if(i < _arr_size) arr[i] == _counter_moves[i];
+        else arr[i] == nullptr;
+    }
+    return;
 }

@@ -5,9 +5,11 @@
 #include <iostream>
 
 #include "test_functions.h"
-#include "../tictacAI.h"
+#include "../ai/dynamicCounterAI.h"
+#include "../ai/minMaxAI.h"
 #include "../board/board.h"
 #include "../board/gameBoard.h"
+
 #include "../../lib/easy_timer/easy_timer.h"
 
 void testWinValidation() {
@@ -44,15 +46,19 @@ void testWinValidation() {
         std::cout << "SUCCESS" << std::endl;
     }
 
+    ez_t::timer t(ez_t::interval::Millis);
+    diag_l_b.checkWin();
+    std::cout << "took " << t.getTime() << "millis to check" << std::endl;
+
 }
 
 void testTreeBuild() {
-    tictacAI gameTree;
-    gameTree.generateTree();
+    dynamicCounterAI gameTree;
+    gameTree.generateTree(EMPTY);
 
     std::cout << "There is " << gameTree.getXCount() << " ways for X to win" << std::endl;
     std::cout << "There is " << gameTree.getOCount() << " ways for O to win" << std::endl;
-    std::cout << "Tree has " << gameTree.countNodes() << " total nodes" << std::endl;
+    std::cout << "Tree has " << gameTree.countChildren() << " total nodes" << std::endl;
 
     int tot_nodes = 0;
     for (int i = 0; i < 12; ++i) {
@@ -98,28 +104,27 @@ void testGameBoard() {
     }
 }
 
-void testAIMoves() {
-    tictacAI game_tree;
+void testAICreation() {
     boardSpot ai_mark;
     boardSpot player_mark;
-    gameBoard game_board;
 
-    game_tree.generateTree();
+    opponentAI* dynamic_ai = new dynamicCounterAI();
+    opponentAI* minmax_ai = new minMaxAI();
 
     ai_mark = X_MARK;
-    player_mark = O_MARK;
 
-    game_tree.startGame(ai_mark, &game_board);
+    // test generation
+    ez_t::timer m(ez_t::interval::Millis);
+    dynamic_ai->generateTree(ai_mark);
+    std::cout << "Took " << m.getTime() << " millis to create the non-pruned ai tree" << std::endl;
+    // probably will not work
+    ez_t::timer a(ez_t::interval::Millis);
+    minmax_ai->generateTree(ai_mark);
+    std::cout << "Took " << a.getTime() << " millis to create the pruned ai tree" << std::endl;
 
-    while( game_board.canPlay() ) {
-        int ai_move = game_tree.AIGetNextMove();
-        game_board.playByOpenIndex(ai_move, ai_mark);
-        game_board.printBoard();
-        game_board.promptUserInput(player_mark);
-        game_board.printBoard();
-        game_tree.AISetPrevMove();
-    }
-
+    delete dynamic_ai;
+    delete minmax_ai;
+    std::cout << "done" << std::endl;
 }
 
 void testObjects() {
@@ -175,4 +180,106 @@ void testDynamicArrays() {
     delete [] arr;
 }
 
+void testArrayDelete() {
+    class a {
+    public:
+        a() = default;
+        ~a() {
+            std::cout << "called destructor" << std::endl;
+        }
+    };
 
+    a** arr;
+    arr = new a*[10];
+
+    for(int i = 0; i < 10; i++) {
+        arr[i] = new a();
+    }
+
+    for(int i = 0; i < 10; i++) {
+        delete arr[i];
+    }
+
+    delete [] arr;
+}
+
+void testGamePlay() {
+    opponentAI* test_ai = nullptr;
+    bool getting_choice = true;
+    while(getting_choice) {
+        int c = 0;
+        std::cout << "which ai iteration do you want to test: " << std::endl;
+        std::cout << "0: dynamic size counter arrays" << std::endl;
+        std::cout << "1: alpha-beta pruned tree" << std::endl;
+
+        std::cin >> c;
+        switch (c) {
+            case 0:
+                test_ai = new dynamicCounterAI();
+                getting_choice = false;
+                break;
+
+            case 1:
+                test_ai = new minMaxAI();
+                getting_choice = false;
+                break;
+
+            default:
+                std::cout << c << " is an invalid choice" << std::endl;
+        }
+    }
+
+    test_ai->generateTree(X_MARK);
+
+    gameBoard* g_board = new gameBoard();
+    test_ai->startGame(g_board);
+
+    boardSpot turn_mark = X_MARK;
+    while (g_board->canPlay()) {
+        if(turn_mark == X_MARK) {
+            test_ai->aiTakeNextTurn();
+        } else {
+            g_board->promptUserInput(O_MARK);
+        }
+
+        // move over to opposite turn
+        switch (turn_mark) {
+            case X_MARK:
+                turn_mark = O_MARK;
+                break;
+            default:
+                turn_mark = X_MARK;
+                break;
+        }
+
+        g_board->printBoard();
+        std::cout << std::endl;
+    }
+
+    switch (g_board->checkWin()) {
+        case X_MARK:
+            std::cout << "X WINS" << std::endl;
+            break;
+        case O_MARK:
+            std::cout << "O WINS" << std::endl;
+            break;
+        case EMPTY:
+            std::cout << "DRRRAAAWWWW" << std::endl;
+            break;
+    }
+
+    delete g_board;
+    delete test_ai;
+}
+
+void debugTree() {
+    auto* tree = new minMaxAI();
+    tree->generateTree(X_MARK);
+//    tree->debug();
+
+//    dynamicCounterAI tree;
+//    tree.generateTree(X_MARK);
+//    tree.printWinGrid();
+
+    delete tree;
+}

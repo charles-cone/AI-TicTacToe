@@ -33,9 +33,13 @@ public:
 
     int getOpenSpots() { return _open_spots; }
 
+    bool operator==(const board& other);
+
 private:
-    boardSpot _g_board[BOARD_SIDE_LENGTH][BOARD_SIDE_LENGTH];
+    boardSpot _g_board[BOARD_SIZE];
     int _open_spots;
+
+    static const char _winning_combos[24];
 };
 
 
