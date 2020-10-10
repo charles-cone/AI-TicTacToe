@@ -3,12 +3,15 @@
 int main() {
     // testTreeBuild();
     // testGameBoard();
-    // testWinValidation();
-    // testAIMoves();
+//     testWinValidation();
+    // testAICreation();
     // testObjects();
-    testTimerLibrary();
+    // testTimerLibrary();
     // testDebugger();
     // testFloats();
     // testDynamicArrays();
+    // testArrayDelete();
+    testGamePlay();
+//    debugTree();
     return 0;
 }
