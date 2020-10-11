@@ -5,7 +5,11 @@
 #ifndef TICTACTOES_TEST_FUNCTIONS_H
 #define TICTACTOES_TEST_FUNCTIONS_H
 
-#include "../ai/opponentAI.h"
+#include <iostream>
+
+#include "../ai/dynamicCounterAI.h"
+#include "../ai/prunedAI.h"
+#include "../../lib/easy_timer/easy_timer.h"
 
 void testGameBoard();
 void testWinValidation();

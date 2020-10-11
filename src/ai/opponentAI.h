@@ -12,13 +12,12 @@ class opponentAI {
 public:
     virtual ~opponentAI() = default;
 
-    virtual void generateTree(boardSpot ai) = 0;
+    virtual void generateTree() = 0;
     virtual void startGame(gameBoard *game) = 0;
 
     virtual void aiTakeNextTurn() = 0;
 
-    virtual int countChildren() = 0;
-    virtual long int getTreeSize() = 0;
+    virtual int countAllNodes() = 0;
 };
 
 

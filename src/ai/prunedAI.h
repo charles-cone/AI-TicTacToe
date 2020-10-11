@@ -2,25 +2,24 @@
 // Created by ccone on 9/21/2020.
 //
 
-#ifndef TICTACTOES_MINMAXAI_H
-#define TICTACTOES_MINMAXAI_H
+#ifndef TICTACTOES_PRUNEDAI_H
+#define TICTACTOES_PRUNEDAI_H
 
 #include <limits>
 
 #include "opponentAI.h"
 
-class minMaxAI : public opponentAI {
+class prunedAI : public opponentAI {
 public:
-    minMaxAI();
-    ~minMaxAI() override;
+    prunedAI();
+    ~prunedAI() override;
 
-    void generateTree(boardSpot ai) override;
+    void generateTree() override;
     void startGame(gameBoard *game) override;
 
     void aiTakeNextTurn() override;
 
-    int countChildren() override;
-    long int getTreeSize() override;
+    int countAllNodes() override;
 
     // debug
     void debug();
@@ -28,7 +27,7 @@ public:
 private:
     class move_node {
     public:
-        explicit move_node(move_node **counters, int len, char ai_i);
+        explicit move_node(move_node **counters, short len, short ai_i);
         ~move_node();
 
         move_node* getBranch(int i) { return _counter_moves[i]; }
@@ -48,19 +47,16 @@ private:
         node_tree();
         ~node_tree();
 
-        void generateTree(boardSpot ai);
-        int countChildren();
+        void generateTree();
+        int countNodes();
 
         move_node* getHead() { return _head; }
 
         // debug
         [[noreturn]] void navigateTree();
-        void generateEdgeCaseBoard();
 
     private:
         int _rec_count_children(int level, move_node *node);
-
-        board _d_board;
 
         move_node* _rec_generate_game_node(board *board, int &ai_wins, int &h_wins);
         move_node** _rec_generate_human_turns(board *board, int &ai_wins, int &h_wins);
@@ -78,4 +74,4 @@ private:
 };
 
 
-#endif //TICTACTOES_MINMAXAI_H
+#endif //TICTACTOES_PRUNEDAI_H
