@@ -2,15 +2,12 @@
 // Created by ccone on 7/24/2020.
 //
 
-#include <iostream>
-
 #include "test_functions.h"
-#include "../ai/dynamicCounterAI.h"
-#include "../ai/minMaxAI.h"
-#include "../board/board.h"
-#include "../board/gameBoard.h"
-
-#include "../../lib/easy_timer/easy_timer.h"
+/**
+ * ABOUT:
+ *  These were quick and messy functions I wrote throughout creating this program to test
+ *  out certain aspects of my code and c++
+ */
 
 void testWinValidation() {
     board row_b;
@@ -54,11 +51,11 @@ void testWinValidation() {
 
 void testTreeBuild() {
     dynamicCounterAI gameTree;
-    gameTree.generateTree(EMPTY);
+    gameTree.generateTree();
 
     std::cout << "There is " << gameTree.getXCount() << " ways for X to win" << std::endl;
     std::cout << "There is " << gameTree.getOCount() << " ways for O to win" << std::endl;
-    std::cout << "Tree has " << gameTree.countChildren() << " total nodes" << std::endl;
+    std::cout << "Tree has " << gameTree.countAllNodes() << " total nodes" << std::endl;
 
     int tot_nodes = 0;
     for (int i = 0; i < 12; ++i) {
@@ -109,17 +106,17 @@ void testAICreation() {
     boardSpot player_mark;
 
     opponentAI* dynamic_ai = new dynamicCounterAI();
-    opponentAI* minmax_ai = new minMaxAI();
+    opponentAI* minmax_ai = new prunedAI();
 
     ai_mark = X_MARK;
 
     // test generation
     ez_t::timer m(ez_t::interval::Millis);
-    dynamic_ai->generateTree(ai_mark);
+    dynamic_ai->generateTree();
     std::cout << "Took " << m.getTime() << " millis to create the non-pruned ai tree" << std::endl;
     // probably will not work
     ez_t::timer a(ez_t::interval::Millis);
-    minmax_ai->generateTree(ai_mark);
+    minmax_ai->generateTree();
     std::cout << "Took " << a.getTime() << " millis to create the pruned ai tree" << std::endl;
 
     delete dynamic_ai;
@@ -220,7 +217,7 @@ void testGamePlay() {
                 break;
 
             case 1:
-                test_ai = new minMaxAI();
+                test_ai = new prunedAI();
                 getting_choice = false;
                 break;
 
@@ -229,7 +226,7 @@ void testGamePlay() {
         }
     }
 
-    test_ai->generateTree(X_MARK);
+    test_ai->generateTree();
 
     gameBoard* g_board = new gameBoard();
     test_ai->startGame(g_board);
@@ -273,8 +270,8 @@ void testGamePlay() {
 }
 
 void debugTree() {
-    auto* tree = new minMaxAI();
-    tree->generateTree(X_MARK);
+    auto* tree = new prunedAI();
+    tree->generateTree();
 //    tree->debug();
 
 //    dynamicCounterAI tree;

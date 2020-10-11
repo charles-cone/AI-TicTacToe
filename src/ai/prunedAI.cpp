@@ -2,30 +2,36 @@
 // Created by ccone on 9/21/2020.
 //
 
-#include "minMaxAI.h"
+#include "prunedAI.h"
 
 // PRUNE AI
 
-minMaxAI::minMaxAI() {
+prunedAI::prunedAI() {
     _tree_start = nullptr;
     _game_state = nullptr;
     _ai_mark = EMPTY;
 }
 
-minMaxAI::~minMaxAI() {
+prunedAI::~prunedAI() {
     delete _tree_start;
 }
 
-void minMaxAI::generateTree(boardSpot ai) {
-    // TODO erase old tree before making a new one
-    if(_tree_start == nullptr && ai != _ai_mark ) {
-        _ai_mark = ai;
+/**
+ * allocates and creates the game tree
+ */
+void prunedAI::generateTree() {
+    if(_tree_start == nullptr) {
+        _ai_mark = X_MARK;
         _tree_start = new node_tree();
-        _tree_start->generateTree(_ai_mark);
+        _tree_start->generateTree();
     }
 }
 
-void minMaxAI::startGame(gameBoard *game) {
+/**
+ * Starts a new game against the AI
+ * @param game pointer to the board that the game will be played on
+ */
+void prunedAI::startGame(gameBoard *game) {
     if(_tree_start != nullptr) {
         if(_ai_mark == X_MARK) {
             _game_state = _tree_start->getHead();
@@ -34,7 +40,10 @@ void minMaxAI::startGame(gameBoard *game) {
     }
 }
 
-void minMaxAI::aiTakeNextTurn() {
+/**
+ * Reads the last play by the human, and moves accordingly
+ */
+void prunedAI::aiTakeNextTurn() {
     int last_play = 0;
     // Do not move to next node on the first turn
     if(_board->getOpenSpots() != BOARD_SIZE){
@@ -45,33 +54,42 @@ void minMaxAI::aiTakeNextTurn() {
         // advance to the next node based on the opponents play
         _game_state = _game_state->getBranch(last_play);
     }
-    // TODO get rid of debugging
-    //_game_state->investigateNode();
     _board->setPlace(_game_state->getAiIndex(), _ai_mark);
 }
 
-// TODO rename this to make some aspect of it less shitty
-int minMaxAI::countChildren() {
-    return _tree_start->countChildren();
+/**
+ * Recursively counts all nodes in the game tree
+ * @return The number of nodes in the tree
+ */
+int prunedAI::countAllNodes() {
+    return _tree_start->countNodes();
 }
 
-long int minMaxAI::getTreeSize() {
-    return 0;
-}
-
-void minMaxAI::debug() {
+/**
+ * !!WILL SEGFAULT!! Function to aid in debugging, requires a breakpoint to be placed
+ */
+void prunedAI::debug() {
     _tree_start->navigateTree();
 }
 
 // MOVE NODE
 
-minMaxAI::move_node::move_node(move_node **counters, int len, char ai_i) {
+/**
+ * Represents a single turn, contains the best position for the AI and all possible human outcomes
+ * @param counters An array pointing to move_nodes for all possible human moves
+ * @param len The length of the counter array
+ * @param ai_i The index of the best possible AI play on the board
+ */
+prunedAI::move_node::move_node(move_node **counters, short len, short ai_i) {
     _counter_moves = counters;
     _counter_len = len;
     _ai_play_index = ai_i;
 }
 
-minMaxAI::move_node::~move_node() {
+/**
+ * Deallocates all sub-nodes in the counter array, as well as the array
+ */
+prunedAI::move_node::~move_node() {
     if(!hasNoCounters()) {
         for (int i = 0; i < _counter_len; ++i) {
             delete _counter_moves[i];
@@ -80,8 +98,10 @@ minMaxAI::move_node::~move_node() {
     }
 }
 
-// store the node's data in a way to make it easy to visualize in the debugger
-void minMaxAI::move_node::investigateNode() {
+/**
+ * Store the node's data in a way to make it easy to visualize in the debugger
+ */
+void prunedAI::move_node::investigateNode() {
     move_node* counters[BOARD_SIZE];
     for(int i = 0; i < BOARD_SIZE; i++){
         if(i < _counter_len) {
@@ -95,44 +115,51 @@ void minMaxAI::move_node::investigateNode() {
 
 // NODE TREE
 
-minMaxAI::node_tree::node_tree() {
+/**
+ * Class responsible for managing all of the nodes
+ */
+prunedAI::node_tree::node_tree() {
     _head = nullptr;
     _ai_mark = EMPTY;
     _human_mark = EMPTY;
 }
 
-minMaxAI::node_tree::~node_tree() {
+/**
+ * Deallocates game tree, if it exists
+ */
+prunedAI::node_tree::~node_tree() {
     delete _head;
 }
 
-void minMaxAI::node_tree::generateTree(boardSpot ai) {
+/**
+ * Start recursively generating a game tree, with X as the AI
+ */
+void prunedAI::node_tree::generateTree() {
     int human_wins = 0;
     int ai_wins = 0;
     auto* b_state = new board();
 
-    switch (ai) {
-        case X_MARK:
-            _ai_mark = X_MARK;
-            _human_mark = O_MARK;
-            generateEdgeCaseBoard();
-            _head = _rec_generate_game_node(b_state, ai_wins, human_wins);
-            break;
-        case O_MARK:
-            _ai_mark = O_MARK;
-            _human_mark = X_MARK;
-            break;
-        default:
-            break;
-    }
-    delete b_state;
+    _ai_mark = X_MARK;
+    _human_mark = O_MARK;
+    _head = _rec_generate_game_node(b_state, ai_wins, human_wins);
+
 }
 
-int minMaxAI::node_tree::countChildren() {
-    return _rec_count_children(0, nullptr);
+/**
+ * Recursively count all nodes inside the game tree
+ * @return The number of nodes in the Tree
+ */
+int prunedAI::node_tree::countNodes() {
+    return _rec_count_children(0, _head);
 }
 
-
-int minMaxAI::node_tree::_rec_count_children(int level, move_node *node) {
+/**
+ * Count all nodes on the level, and then recurse down until the bottom
+ * @param level The current level that is being counted, starts at 0
+ * @param node The node that's sub-nodes are counted
+ * @return Count of node's sub-nodes including itself
+ */
+int prunedAI::node_tree::_rec_count_children(int level, move_node *node) {
     if(node->hasNoCounters()) return 1;
     int count = 0;
     for(int i = 0; i < BOARD_SIZE - level; i++) {
@@ -141,7 +168,14 @@ int minMaxAI::node_tree::_rec_count_children(int level, move_node *node) {
     return count+1;
 }
 
-minMaxAI::move_node* minMaxAI::node_tree::_rec_generate_game_node(board *board, int &ai_wins, int &h_wins) {
+/**
+ * Creates a new game node to represent the state of the board, tries all possible plays and keeps the best
+ * @param board A board containing the state of the game that the new node will represent
+ * @param ai_wins Set to the number of winning states that the move will lead to
+ * @param h_wins Set to the number of losing states that the move will lead to
+ * @return pointer to the new node created
+ */
+prunedAI::move_node* prunedAI::node_tree::_rec_generate_game_node(board *board, int &ai_wins, int &h_wins) {
     if(!board->canPlay()) {
         // if human won update h_wins
         h_wins += board->checkWin() == _human_mark;
@@ -155,7 +189,6 @@ minMaxAI::move_node* minMaxAI::node_tree::_rec_generate_game_node(board *board, 
 
     int t_h_wins;
     int t_ai_wins;
-    //TODO move this down to lower scope
     for (char i = 0; i < BOARD_SIZE; ++i) {
         if(board->checkPlace(i) == EMPTY) {
             t_h_wins = t_ai_wins = 0;
@@ -176,7 +209,9 @@ minMaxAI::move_node* minMaxAI::node_tree::_rec_generate_game_node(board *board, 
                 return t_node;
 
             } else {
+                // check to see if new nodes win/loss is better
                 float t_ratio = (float)t_ai_wins / (float)t_h_wins;
+                // make sure at least one move is chosen
                 if(t_ratio > b_ratio || b_node == nullptr) {
                     b_h_wins = t_h_wins;
                     b_ai_wins = t_ai_wins;
@@ -193,7 +228,14 @@ minMaxAI::move_node* minMaxAI::node_tree::_rec_generate_game_node(board *board, 
     return b_node;
 }
 
-minMaxAI::move_node** minMaxAI::node_tree::_rec_generate_human_turns(board *board, int &ai_wins, int &h_wins) {
+/**
+ * Create the array of all possible human outcomes to the AI's move
+ * @param board The board containing the current game state
+ * @param ai_wins Set to the number of winning states that the move will lead to
+ * @param h_wins Set to the number of losing states that the move will lead to
+ * @return pointer to the array of counters
+ */
+prunedAI::move_node** prunedAI::node_tree::_rec_generate_human_turns(board *board, int &ai_wins, int &h_wins) {
     // check if board passed can play, or if the ai won
     if(!board->canPlay()) {
         ai_wins += board->checkWin() == _ai_mark;
@@ -216,7 +258,10 @@ minMaxAI::move_node** minMaxAI::node_tree::_rec_generate_human_turns(board *boar
     return c_arr;
 }
 
-[[noreturn]] void minMaxAI::node_tree::navigateTree() {
+/**
+ * !WILL SEGFAULT! only useful in debugging to move throughout the tree
+ */
+[[noreturn]] void prunedAI::node_tree::navigateTree() {
     int level = 1;
     move_node* node = _head;
     move_node* counters[BOARD_SIZE];
@@ -236,16 +281,5 @@ minMaxAI::move_node** minMaxAI::node_tree::_rec_generate_human_turns(board *boar
         level += 2;
     }
 
-}
-
-void minMaxAI::node_tree::generateEdgeCaseBoard() {
-    board f;
-    f.setPlace(8, X_MARK);
-    f.setPlace(0, O_MARK);
-    f.setPlace(7, X_MARK);
-    f.setPlace(6, O_MARK);
-    f.setPlace(5, X_MARK);
-    //f.setPlace(5, O_MARK);
-    _d_board = f;
 }
 

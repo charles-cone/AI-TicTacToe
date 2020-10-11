@@ -23,9 +23,13 @@ dynamicCounterAI::~dynamicCounterAI() {
     _tree_start = nullptr;
 }
 
-void dynamicCounterAI::generateTree(boardSpot ai) {
+/* generates the AI's game tree, sets the generated flag
+ *
+ * @param ai The mark that the AI will use (CURRENTLY ONLY WORKS WITH X)
+ * @return nothing
+ * */
+void dynamicCounterAI::generateTree() {
     if(!_is_generated) {
-        _ai_mark = ai;
         auto* blank_board = new board();
         _tree_start = new move_node(blank_board);
 
@@ -34,18 +38,24 @@ void dynamicCounterAI::generateTree(boardSpot ai) {
     }
 }
 
-int dynamicCounterAI::rec_create_tree(move_node *c_node, bool is_x_turn, board *c_board) {
-    // check if its a winning move;
+/* recursive function used to create each node and add it's counters
+ *
+ * @param c_node A pointer to the move_node to populate with ratio and counter moves
+ * @param is_x_turn Boolean value to know which mark to place
+ * @param c_board Pointer to the board representing the game
+ * @return nothing
+ * */
+void dynamicCounterAI::rec_create_tree(move_node *c_node, bool is_x_turn, board *c_board) {
     if( c_node->isWinningPlay() ) {
         boardSpot mark = c_node->getWinningMark();
         c_node->setWinCounts(
                 1*(mark == X_MARK),
                 1*(mark == O_MARK)
                 );
-        return 0;
+        return;
     }
 
-    else if ( c_board->getOpenSpots() == 0) return 0;
+    else if ( c_board->getOpenSpots() == 0) return;
 
     boardSpot move_mark = (is_x_turn ? X_MARK : O_MARK);
     int branched_x_wins = 0;
@@ -70,10 +80,13 @@ int dynamicCounterAI::rec_create_tree(move_node *c_node, bool is_x_turn, board *
         }
     }
     c_node->setWinCounts(branched_x_wins, branched_o_wins);
-
-    return 0;
 }
 
+/*  Used to make sure that the tree calculates the proper number of winning games
+ *
+ * @param None
+ * @return The count of X (or O) winning games from the head of the tree
+ * */
 int dynamicCounterAI::getXCount() {
     return _tree_start->getXWinCount();
 }
@@ -82,14 +95,26 @@ int dynamicCounterAI::getOCount() {
     return _tree_start->getOWinCount();
 }
 
-int dynamicCounterAI::countChildren() {
+// Calls countSubNodes and recursively counts the number of nodes
+// @param None
+// @return The total number of move_nodes in the game tree
+
+int dynamicCounterAI::countAllNodes() {
     return _tree_start->countSubNodes();
 }
+
 
 int dynamicCounterAI::countNodesAtLevel(int level) {
     return rec_count_nodes_at_level(--level, _tree_start);
 }
 
+
+/**
+ * Recursive function to total the number of nodes at a specific level
+ * @param level The level's nodes to count, starts at 0
+ * @param node A node in the tree, starting from the head
+ * @return The number of nodes on level
+ */
 int dynamicCounterAI::rec_count_nodes_at_level(int level, dynamicCounterAI::move_node *node) {
     if(node == nullptr) {
         return 0;
@@ -108,6 +133,10 @@ int dynamicCounterAI::rec_count_nodes_at_level(int level, dynamicCounterAI::move
     }
 }
 
+/**
+ * Starts a new game against the AI
+ * @param game Pointer to the new gameBoard used by the human
+ */
 void dynamicCounterAI::startGame( gameBoard *game ) {
     _cur_game = game;
 
@@ -120,23 +149,26 @@ void dynamicCounterAI::startGame( gameBoard *game ) {
     }
 }
 
+/**
+ * Gets the AI's next move, ai_set_prev_move MUST be called before
+ * @return the AI's move as an index on the board
+ */
 int dynamicCounterAI::ai_get_next_move() {
     if(!_ai_turn) return 0;
 
     int best_move_index = 0;
     float best_ratio = 0;
-
     for (int i = 0; i < _cur_game->getOpenSpots(); ++i) {
         move_node* cur_option = _ai_current_board_state->getBranch(i);
         float ratio;
         if(cur_option != nullptr) {
             cur_option->inspect();
-            // if the game can be won, win it
+            // if the move is winning or there is only one option take it
             if(cur_option->getWinningMark() == _ai_mark || _cur_game->getOpenSpots() == 1) {
                 return i;
 
             } else {
-                // check the win / loss ratio
+                // check the win / loss ratio to find the best node to go to
                 if(_ai_mark == X_MARK) {
                     ratio = cur_option->getXWinRatio();
                 } else {
@@ -156,6 +188,9 @@ int dynamicCounterAI::ai_get_next_move() {
     return best_move_index;
 }
 
+/**
+ * Adjusts game state based on human move MUST be called before ai_get_next_move
+ */
 void dynamicCounterAI::ai_set_prev_move() {
     if(_ai_turn) return;
     // convert the board space to an index that can be used in the counter array
@@ -168,43 +203,18 @@ void dynamicCounterAI::ai_set_prev_move() {
     _ai_turn = true;
 }
 
-long int dynamicCounterAI::getTreeSize() {
-    return 0;
-}
-
+/*
+ * Have the AI make it's next turn on the board
+ */
 void dynamicCounterAI::aiTakeNextTurn() {
     ai_set_prev_move();
     _cur_game->playByOpenIndex(ai_get_next_move(), _ai_mark);
 }
 
-void dynamicCounterAI::printWinGrid() {
-    for (int i = 0; i < 3; ++i) {
-        int row = i*3;
-        std::cout << _tree_start->getBranch(row)->getXWinCount() << "|"
-                  << _tree_start->getBranch(row+1)->getXWinCount() << "|"
-                  << _tree_start->getBranch(row+2)->getXWinCount() << std::endl;
-
-        std::cout << _tree_start->getBranch(row)->getOWinCount() << "|"
-                  << _tree_start->getBranch(row+1)->getOWinCount() << "|"
-                  << _tree_start->getBranch(row+2)->getOWinCount() << std::endl;
-
-        std::cout << std::endl;
-    }
-    std::cout << "totals X:" << _tree_start->getXWinCount() << " O:" << _tree_start->getOWinCount() << std::endl;
-}
-
-dynamicCounterAI::move_node::move_node() {
-    _winning_mark = EMPTY;
-    _possible_x_wins = 0;
-    _possible_o_wins = 0;
-    _ratio = 0.0;
-    _arr_size = 0;
-
-    for (int i = 0; i < _arr_size; i++) {
-        _counter_moves[i] = nullptr;
-    }
-}
-
+/**
+ * Constructor for the move node, allocates the counter array and checks if board is winning
+ * @param g_state Pointer to the board that the node is representing
+ */
 dynamicCounterAI::move_node::move_node(board *g_state) {
     _winning_mark = EMPTY;
     _possible_x_wins = 0;
@@ -223,6 +233,9 @@ dynamicCounterAI::move_node::move_node(board *g_state) {
     }
 }
 
+/**
+ * Deallocates the counter array and ALL of it's sub-nodes
+ */
 dynamicCounterAI::move_node::~move_node() {
     for (int i = 0; i < _arr_size; i++) {
         delete _counter_moves[i];
@@ -230,18 +243,36 @@ dynamicCounterAI::move_node::~move_node() {
     delete [] _counter_moves;
 }
 
+/**
+ * Set a node pointer in the counter array
+ * @param i Index of counter array to set
+ * @param branch Pointer to the new sub-node
+ */
 void dynamicCounterAI::move_node::setBranch(int i, dynamicCounterAI::move_node *branch) {
     _counter_moves[i] = branch;
 }
 
+/**
+ * Check if the node represents a winning move
+ * @return boolean if node is winning or not
+ */
 bool dynamicCounterAI::move_node::isWinningPlay() {
     return _winning_mark != EMPTY;
 }
 
+/**
+ * recursively makes a count of all nodes in the tree
+ * @return The total number of nodes in the tree
+ */
 int dynamicCounterAI::move_node::countSubNodes() {
     return rec_count_nodes(this);
 }
 
+/**
+ * Recursively count all the sub-nodes under node
+ * @param node The start node to count
+ * @return the final count of sub-nodes
+ */
 int dynamicCounterAI::move_node::rec_count_nodes(dynamicCounterAI::move_node *node) {
     int sub_node_count = 0;
     for (int i = 0; i < BOARD_SIZE*(node != nullptr); ++i) {
@@ -250,17 +281,25 @@ int dynamicCounterAI::move_node::rec_count_nodes(dynamicCounterAI::move_node *no
     return sub_node_count + (node != nullptr);
 }
 
+/**
+ * Set the combined values of all sub-node wins
+ * @param x_wins count of all x_wins
+ * @param o_wins
+ */
 void dynamicCounterAI::move_node::setWinCounts(int x_wins, int o_wins) {
     _possible_o_wins = o_wins;
     _possible_x_wins = x_wins;
     _ratio = _ratio = (float)_possible_x_wins / (float)_possible_o_wins;
 }
 
+/**
+ * Used to aid in debugging, reads all counters into static-sized array
+ */
 void dynamicCounterAI::move_node::inspect() {
     move_node* arr[9];
     for(int i = 0; i < 9; i++){
         if(i < _arr_size) arr[i] == _counter_moves[i];
         else arr[i] == nullptr;
     }
-    return;
+    return; // place a breakpoint here during debugging
 }

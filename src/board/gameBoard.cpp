@@ -4,6 +4,10 @@
 
 #include "gameBoard.h"
 
+/**
+ * Prompt the user on the console for their input
+ * @param mark The players mark
+ */
 void gameBoard::promptUserInput(boardSpot mark) {
     bool invalid_input = true;
     std::cout << "- Enter your move -" << std::endl;
@@ -17,7 +21,6 @@ void gameBoard::promptUserInput(boardSpot mark) {
 
         if( setPlace(r, c, mark) ) {
             _last_play_index = 3*r + c;
-            _last_play_mark = mark;
             invalid_input = false;
         } else {
             std::cout << "Spot is already taken, chose another" << std::endl;
@@ -25,6 +28,9 @@ void gameBoard::promptUserInput(boardSpot mark) {
     }
 }
 
+/**
+ * Print the board in ascii art to console
+ */
 void gameBoard::printBoard() {
     for(int i = 0; i < BOARD_SIDE_LENGTH; ++i) {
         for (int j = 0; j < BOARD_SIDE_LENGTH; ++j) {
@@ -48,10 +54,19 @@ void gameBoard::printBoard() {
     std::cout << std::endl;
 }
 
+/**
+ * gets the index of the last move made
+ * @return Index of the last move
+ */
 int gameBoard::getIndexOfLastPlay() {
     return _last_play_index;
 }
 
+/**
+ * Play a mark, indexed by only the open spaces
+ * @param o_i The open index to play at
+ * @param mark The mark to place
+ */
 void gameBoard::playByOpenIndex(int o_i, boardSpot mark) {
     for(int i = 0; i < BOARD_SIZE; i++) {
         if (checkPlace(i) == EMPTY) {
@@ -62,5 +77,14 @@ void gameBoard::playByOpenIndex(int o_i, boardSpot mark) {
                 o_i--;
             }
         }
+    }
+}
+
+/**
+ * Erases all marks on board
+ */
+void gameBoard::resetBoard() {
+    for(int i = 0; i < BOARD_SIZE; i++) {
+        erasePlay(i);
     }
 }

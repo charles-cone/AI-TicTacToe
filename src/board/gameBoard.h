@@ -17,13 +17,13 @@ public:
     void printBoard();
     void promptUserInput(boardSpot mark);
     void playByOpenIndex(int o_i, boardSpot mark);
+    void resetBoard();
 
     int getIndexOfLastPlay();
 
 
 private:
     int _last_play_index;
-    boardSpot _last_play_mark;
 
 };
 

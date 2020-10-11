@@ -29,9 +29,8 @@ public:
     boardSpot checkPlace(int i);
     boardSpot checkPlace(int r, int c);
     boardSpot checkWin();
-    boardSpot checkWinVerbose();
 
-    int getOpenSpots() { return _open_spots; }
+    int getOpenSpots() const { return _open_spots; }
 
     bool operator==(const board& other);
 
